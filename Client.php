@@ -397,6 +397,22 @@ class Credis_Client {
     }
 
     /**
+     * @param Redis $redis
+     * @param bool  $isConnected
+     * @return Credis_Client
+     */
+    public function setRedisConnector(\Redis $redis, $isConnected)
+    {
+        if ($this->isConnected()) {
+            $this->close(true);
+        }
+        $this->redis = $redis;
+        $this->standalone = false;
+        $this->connected = (bool)$isConnected;
+        return $this;
+    }
+
+    /**
      * @param int $retries
      * @return Credis_Client
      */
