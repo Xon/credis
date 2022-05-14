@@ -732,29 +732,43 @@ class CredisTest extends CredisTestCommon
 
   public function testConnectionStringsTls()
   {
-      $this->credis = new Credis_Client('tls://'.$this->redisConfig[0]['host'] . ':' . $this->redisConfig[0]['port']);
-      $this->assertEquals($this->credis->getHost(),$this->redisConfig[0]['host']);
-      $this->assertEquals($this->credis->getPort(),$this->redisConfig[0]['port']);
-      $this->credis = new Credis_Client('tls://'.$this->redisConfig[0]['host']);
-      $this->assertEquals($this->credis->getPort(),6379);
-      $this->credis = new Credis_Client('tls://'.$this->redisConfig[0]['host'] . ':' . $this->redisConfig[0]['port'] . '/abc123');
-      $this->assertEquals($this->credis->getPersistence(),'abc123');
-      $this->credis = new Credis_Client('tls://'.$this->redisConfig[0]['host'],6380);
-      $this->assertEquals($this->credis->getPort(),6380);
-      $this->credis = new Credis_Client('tls://'.$this->redisConfig[0]['host'],NULL,NULL,"abc123");
-      $this->assertEquals($this->credis->getPersistence(),'abc123');
+      foreach(['ssl','tls','tlsv1.0','tlsv1.1','tlsv1.2'] as $prefix){
+        $this->credis = new Credis_Client($prefix.'://'.$this->redisConfig[0]['host'] . ':' . $this->redisConfig[0]['port']);
+        $this->assertEquals($this->credis->getHost(),$this->redisConfig[0]['host']);
+        $this->assertEquals($this->credis->getPort(),$this->redisConfig[0]['port']);
+        $this->assertTrue($this->credis->isTls());
+        $this->credis = new Credis_Client($prefix.'://'.$this->redisConfig[0]['host']);
+        $this->assertEquals($this->credis->getPort(),6379);
+        $this->assertTrue($this->credis->isTls());
+        $this->credis = new Credis_Client($prefix.'://'.$this->redisConfig[0]['host'] . ':' . $this->redisConfig[0]['port'] . '/abc123');
+        $this->assertEquals($this->credis->getPersistence(),'abc123');
+        $this->assertTrue($this->credis->isTls());
+        $this->credis = new Credis_Client($prefix.'://'.$this->redisConfig[0]['host'],6380);
+        $this->assertEquals($this->credis->getPort(),6380);
+        $this->assertTrue($this->credis->isTls());
+        $this->credis = new Credis_Client($prefix.'://'.$this->redisConfig[0]['host'],NULL,NULL,"abc123");
+        $this->assertEquals($this->credis->getPersistence(),'abc123');
+        $this->assertTrue($this->credis->isTls());
+      }
   }
 
   public function testTLSConnection()
   {
-    // php/redis both need to be compiled with similar TLS configurations
-    // Modern TLS against newer redis versions only reliably works for php 7.2+ due to TLSv1.2+ support
-    if (version_compare(phpversion(),'7.2.0','<')) {
-      $this->assertTrue(true);
-      return;
-    }
+    /**
+    https://www.php.net/manual/en/context.ssl.php
+    > Oddly, if "tls://" is set below, then TLSv1 is forced, but using "ssl://" allows TLSv1.2
 
-    $this->credis = new Credis_Client('tls://'.$this->redisConfig[8]['host'] . ':' . $this->redisConfig[8]['port']);
+    and
+    >Recommended use "ssl://" transport.
+    > in php 5.5 ~ 7.1
+    > ssl:// transport = ssl_v2|ssl_v3|tls_v1.0|tls_v1.1|tls_v1.2
+    > tls:// transport = tls_v1.0
+    > after 7.2 ssl:// and tls:// transports is same
+    > php 7.2 ~ 7.3 = tls_v1.0|tls_v1.1|tls_v1.2
+    > php 7.4 ~ 8.1 = tls_v1.0|tls_v1.1|tls_v1.2|tls_v1.3
+     */
+
+    $this->credis = new Credis_Client('ssl://'.$this->redisConfig[8]['host'] . ':' . $this->redisConfig[8]['port']);
     $this->credis->setTlsOptions((array)$this->redisConfig[8]['ssl']);
     $this->credis->connect();
     $this->assertTrue(true);
