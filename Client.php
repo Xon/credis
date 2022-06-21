@@ -59,7 +59,7 @@ class CredisException extends Exception
  * @method int|Credis_Client           dbsize()
  *
  * Keys:
- * @method int|Credis_Client           del(string $key)
+ * @method int|Credis_Client           del(string|array $key)
  * @method int|Credis_Client           exists(string $key)
  * @method int|Credis_Client           expire(string $key, int $seconds)
  * @method int|Credis_Client           expireAt(string $key, int $timestamp)
@@ -75,13 +75,13 @@ class CredisException extends Exception
  * @method int|Credis_Client           append(string $key, string $value)
  * @method int|Credis_Client           decr(string $key)
  * @method int|Credis_Client           decrBy(string $key, int $decrement)
- * @method bool|string|Credis_Client   get(string $key)
+ * @method false|string|Credis_Client  get(string $key)
  * @method int|Credis_Client           getBit(string $key, int $offset)
  * @method string|Credis_Client        getRange(string $key, int $start, int $end)
  * @method string|Credis_Client        getSet(string $key, string $value)
  * @method int|Credis_Client           incr(string $key)
  * @method int|Credis_Client           incrBy(string $key, int $decrement)
- * @method array|Credis_Client         mGet(array $keys)
+ * @method false|array|Credis_Client   mGet(array $keys)
  * @method bool|Credis_Client          mSet(array $keysValues)
  * @method int|Credis_Client           mSetNx(array $keysValues)
  * @method bool|Credis_Client          set(string $key, string $value, int | array $options = null)
@@ -195,7 +195,7 @@ class Credis_Client {
 
     /**
      * Scheme of the Redis server (tcp, tls, tlsv1.2, unix)
-     * @var string
+     * @var string|null
      */
     protected $scheme;
 
@@ -207,19 +207,19 @@ class Credis_Client {
 
     /**
      * Port on which the Redis server is running
-     * @var integer|null
+     * @var int|null
      */
     protected $port;
 
     /**
      * Timeout for connecting to Redis server
-     * @var float
+     * @var float|null
      */
     protected $timeout;
 
     /**
      * Timeout for reading response from Redis server
-     * @var float
+     * @var float|null
      */
     protected $readTimeout;
 
@@ -280,12 +280,12 @@ class Credis_Client {
     protected $isWatching = FALSE;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $authUsername;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $authPassword;
 
@@ -301,7 +301,7 @@ class Credis_Client {
     protected $wrapperMethods = array('delete' => 'del', 'getkeys' => 'keys', 'sremove' => 'srem');
 
     /**
-     * @var array
+     * @var array<string,string>|callable|null
      */
     protected $renamedCommands;
 
@@ -342,18 +342,20 @@ class Credis_Client {
      * $host may also be a path to a unix socket or a string in the form of tcp://[hostname]:[port] or unix://[path]
      *
      * @param string $host The hostname of the Redis server
-     * @param integer $port The port number of the Redis server
-     * @param float $timeout  Timeout period in seconds
+     * @param int|null $port The port number of the Redis server
+     * @param float|null $timeout  Timeout period in seconds
      * @param string $persistent  Flag to establish persistent connection
-     * @param int $db The selected datbase of the Redis server
-     * @param string $password The authentication password of the Redis server
-     * @param string $username The authentication username of the Redis server
+     * @param int $db The selected database of the Redis server
+     * @param string|null $password The authentication password of the Redis server
+     * @param string|null $username The authentication username of the Redis server
      * @param array|null $tlsOptions The TLS/SSL context options. See https://www.php.net/manual/en/context.ssl.php for details
      */
     public function __construct($host = '127.0.0.1', $port = 6379, $timeout = null, $persistent = '', $db = 0, $password = null, $username = null, array $tlsOptions = null)
     {
         $this->host = (string) $host;
-        $this->port = (int) $port;
+        if ($port !== null) {
+          $this->port = (int) $port;
+        }
         $this->scheme = null;
         $this->timeout = $timeout;
         $this->persistent = (string) $persistent;
@@ -638,7 +640,7 @@ class Credis_Client {
      * Set the read timeout for the connection. Use 0 to disable timeouts entirely (or use a very long timeout
      * if not supported).
      *
-     * @param int $timeout 0 (or -1) for no timeout, otherwise number of seconds
+     * @param float $timeout 0 (or -1) for no timeout, otherwise number of seconds
      * @throws CredisException
      * @return Credis_Client
      */
