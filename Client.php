@@ -1603,7 +1603,7 @@ class Credis_Client {
      */
     private static function _prepare_command($args)
     {
-        return sprintf('*%d%s%s%s', \count($args), CRLF, \implode(CRLF, \array_map([static::class, '_map'], $args)), CRLF);
+        return sprintf('*%d%s%s%s', count($args), CRLF, implode(CRLF, array_map([static::class, '_map'], $args)), CRLF);
     }
 
     private static function _map($arg)
