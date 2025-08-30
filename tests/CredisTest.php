@@ -17,6 +17,7 @@ class CredisTest extends CredisTestCommon
         }
         $this->credis->flushDb();
     }
+
     protected function tearDownInternal()
     {
         if ($this->credis) {
@@ -24,6 +25,7 @@ class CredisTest extends CredisTestCommon
             $this->credis = null;
         }
     }
+
     public function testFlush()
     {
         $this->credis->set('foo', 'FOO');
@@ -37,7 +39,7 @@ class CredisTest extends CredisTestCommon
         try {
             $this->credis->save();
             $this->fail('Expected exception (read should timeout since disk sync should take longer than 0.0001 seconds).');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
         }
         $this->credis->setReadTimeout(10);
         $this->assertTrue(true);
@@ -47,13 +49,13 @@ class CredisTest extends CredisTestCommon
     {
         try {
             $this->credis->setReadTimeout(-1);
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             $this->fail('setReadTimeout should accept -1 as timeout value');
         }
         try {
             $this->credis->setReadTimeout(-2);
             $this->fail('setReadTimeout should not accept values less than -1');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
         }
         $this->assertTrue(true);
     }
@@ -543,7 +545,7 @@ class CredisTest extends CredisTestCommon
         try {
             $this->credis->eval('this-is-not-lua');
             $this->fail('Expected exception on invalid script.');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
         }
     }
 
@@ -561,7 +563,7 @@ class CredisTest extends CredisTestCommon
         $this->credis->setReadTimeout($timeout);
         try {
             $testCase = $this;
-            $this->credis->pSubscribe(array('foobar','test*'), function ($credis, $pattern, $channel, $message) use ($testCase, &$time) {
+            $this->credis->pSubscribe(array('foobar', 'test*'), function ($credis, $pattern, $channel, $message) use ($testCase, &$time) {
                 $time = time(); // Reset timeout
                 // Test using: redis-cli publish foobar blah
                 $testCase->assertEquals('blah', $message);
@@ -639,7 +641,7 @@ class CredisTest extends CredisTestCommon
         try {
             $this->credis->connect();
             $this->fail('connect should fail with wrong password');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             if (strpos($e->getMessage(), 'username') !== false) {
                 $this->assertStringStartsWith('WRONGPASS invalid username-password pair', $e->getMessage());
             } else {
@@ -654,12 +656,12 @@ class CredisTest extends CredisTestCommon
         }
         try {
             $this->credis->set('key', 'value');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             $this->assertStringStartsWith('NOAUTH Authentication required', $e->getMessage());
         }
         try {
             $this->credis->auth('anotherwrongpassword');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             if (strpos($e->getMessage(), 'username') !== false) {
                 $this->assertStringStartsWith('WRONGPASS invalid username-password pair', $e->getMessage());
             } else {
@@ -691,7 +693,7 @@ class CredisTest extends CredisTestCommon
         try {
             $this->credis->connect();
             $this->fail('connect should fail with wrong password');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             if (strpos($e->getMessage(), 'username') !== false) {
                 $this->assertStringStartsWith('WRONGPASS invalid username-password pair', $e->getMessage());
             } else {
@@ -706,12 +708,12 @@ class CredisTest extends CredisTestCommon
         }
         try {
             $this->credis->set('key', 'value');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             $this->assertStringStartsWith('NOAUTH Authentication required', $e->getMessage());
         }
         try {
             $this->credis->auth('anotherwrongpassword');
-        } catch(CredisException $e) {
+        } catch (CredisException $e) {
             if (strpos($e->getMessage(), 'username') !== false) {
                 $this->assertStringStartsWith('WRONGPASS invalid username-password pair', $e->getMessage());
             } else {
@@ -866,6 +868,7 @@ class CredisTest extends CredisTestCommon
         $this->credis->forceStandalone();
         $this->assertTrue(true);
     }
+
     public function testHscan()
     {
         $this->credis->hmset('hash', array('name' => 'Jack','age' => 33));
